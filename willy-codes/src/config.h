@@ -19,7 +19,7 @@
 #define WIFI_PASSWORD   "cafebabe12"
 
 #define WHEEL_RADIUS_MM     (75 / 2)
-#define TICKS_PER_CYCLE     350
+#define TICKS_PER_CYCLE     350             // 7(hall sensor ticks per cycle) * 50(reduction gear ratio)
 
 #define AXLE_WIDTH_MM       150
 

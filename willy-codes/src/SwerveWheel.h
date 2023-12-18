@@ -73,14 +73,16 @@ public:
     void    setMotor(int speedU, int speedD);
     void    drive(int angle, int speed);
     void    reset(bool driver=true);
-    void    calibrate(int key);
+    void    debug(int key);
     Ticks   getTicks(Ticks *ticks=NULL);
+    void    loop();
 
 private:
     bool    getDelta(Ticks &a, Ticks &b, float *dtheta, float *ddist);
 
     WheelDriver     *_pDriver[2];
-
+    WheelDriver     *_pDebug;
+    uint8_t         _idx;
     Ticks           _ticks;
     Ticks           _last_ticks;
 };

@@ -2,7 +2,9 @@
 #define _WHEEL_DRIVER_H_
 #include <ESP32Servo.h>
 #include <Adafruit_PWMServoDriver.h>
+#include <FastPID.h>
 #include "config.h"
+
 
 
 /*
@@ -41,18 +43,32 @@ public:
 
     void     setup();
     void     reset();
-    uint16_t getTPR()           { return _tpr;       }
-    uint16_t getRadius()        { return _radius;    }
+    uint16_t getTPR()               { return _tpr;       }
+    uint16_t getRadius()            { return _radius;    }
 
     void     setSpeed(int speed);
-    int      getSpeed()         { return _speed;     }
+    int      getSpeed()             { return _speed;     }
     long     getTicks();
-    int      getDegreePerTick() { return 360 / _tpr; }
-    int      getDegree()        { return (getTicks() % _tpr) * getDegreePerTick(); }
+    int      getDegreePerTick()     { return 360 / _tpr; }
+    int      getDegree()            { return (getTicks() % _tpr) * getDegreePerTick(); }
+
+    long     getTarget()            { return _tgtTick;    }
+    void     move(long ticks)       { _tgtTick  = ticks;  }
+    void     moveTo(long ticks)     { _tgtTick += ticks;  }
+    void     loop();
+
+    float    getP()                 { return _p;          }
+    float    getI()                 { return _i;          }
+    float    getD()                 { return _d;          }
+    void     setPID(float p, float i, float d);
+    FastPID *getPID()               { return &_pid;       }
 
     friend void isrHandlerPCNT(void *arg);
 
 private:
+    void     init(motor_drv_t drv_type, int8_t pin_pwm, int8_t pin_in1, int8_t pin_in2, int8_t pin_ctr, int8_t pin_ctr_dir,
+                  bool reverse, uint16_t radius, uint16_t tpr, uint8_t addr);
+
     // for tracking odometry
     uint8_t  _unit;
     long     _ticks_mult;
@@ -75,6 +91,13 @@ private:
 
     uint16_t  _radius;
     uint16_t  _tpr;
+
+    float     _p, _i, _d;
+    FastPID   _pid;
+    uint16_t  _pid_hz;
+    uint16_t  _pid_period;
+    long      _tgtTick;
+    unsigned long _last_ms;
 
     // for counting instances
     static uint8_t _num;

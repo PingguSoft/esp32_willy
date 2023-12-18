@@ -102,30 +102,28 @@ void SwerveWheel::reset(bool driver) {
     _last_ticks.reset();
 }
 
-void SwerveWheel::calibrate(int key) {
-    static int idx = 0;
-    int      speed;
-    float    rot;
-    Ticks delta;
+void SwerveWheel::debug(int key) {
+    float   rot;
+    Ticks   delta;
 
     switch (key) {
-        case '1':
-        case '2':
-            idx = key - '1';
+        case '[':
+            _pDebug = _pDriver[0];
+            LOG("drv up\n");
+            break;
+        case ']':
+            _pDebug = _pDriver[1];
+            LOG("drv down\n");
             break;
 
         case ',':
-            speed = _pDriver[idx]->getSpeed();
-            speed -= 5;
-            _pDriver[idx]->setSpeed(speed);
-            LOG("wheel:%d, speed:%4d\n", idx, speed);
+            _pDebug->setSpeed(_pDebug->getSpeed() + 5);
+            LOG("drv:%d, speed:%4d\n", _idx, _pDebug->getSpeed());
             break;
 
         case '.':
-            speed = _pDriver[idx]->getSpeed();
-            speed += 5;
-            _pDriver[idx]->setSpeed(speed);
-            LOG("wheel:%d, speed:%4d\n", idx, speed);
+            _pDebug->setSpeed(_pDebug->getSpeed() - 5);
+            LOG("drv:%d, speed:%4d\n", _idx, _pDebug->getSpeed());
             break;
 
         case 'r':
@@ -139,19 +137,66 @@ void SwerveWheel::calibrate(int key) {
             delta = _ticks - _last_ticks;
             rot  = delta.get().up / _pDriver[IDX_UWHEEL]->getTPR();
             rot  = rot * 60000 / delta.get().millis;
-            LOG("wheel_l, ctr:%8ld, rpm:%6.1f\n", _ticks.get().up,  rot);
+            LOG("drv_u ctr:%8ld, rpm:%6.1f\n", _ticks.get().up,  rot);
 
             rot  = delta.get().down / _pDriver[IDX_DWHEEL]->getTPR();
             rot  = rot * 60000 / delta.get().millis;
-            LOG("wheel_r, ctr:%8ld, rpm:%6.1f\n", _ticks.get().down, rot);
+            LOG("drv_d ctr:%8ld, rpm:%6.1f\n", _ticks.get().down, rot);
             break;
 
-        case 'd':
+        case 's':
             for (int i = 0; i < ARRAY_SIZE(_pDriver); i++) {
                 if (_pDriver[i])
                     _pDriver[i]->setSpeed(0);
             }
             LOG("stop !!!\n");
             break;
+
+        case 'P':
+            _pDebug->setPID(_pDebug->getP() + 0.1, _pDebug->getI(), _pDebug->getD());
+            LOGI("PID: %4.1f, %4.1f, %4.1f\n", _pDebug->getP(), _pDebug->getI(), _pDebug->getD());
+            break;
+
+        case 'p':
+            _pDebug->setPID(_pDebug->getP() - 0.1, _pDebug->getI(), _pDebug->getD());
+            LOGI("PID: %4.1f, %4.1f, %4.1f\n", _pDebug->getP(), _pDebug->getI(), _pDebug->getD());
+            break;
+
+        case 'I':
+            _pDebug->setPID(_pDebug->getP(), _pDebug->getI() + 0.1, _pDebug->getD());
+            LOGI("PID: %4.1f, %4.1f, %4.1f\n", _pDebug->getP(), _pDebug->getI(), _pDebug->getD());
+            break;
+
+        case 'i':
+            _pDebug->setPID(_pDebug->getP(), _pDebug->getI() - 0.1, _pDebug->getD());
+            LOGI("PID: %4.1f, %4.1f, %4.1f\n", _pDebug->getP(), _pDebug->getI(), _pDebug->getD());
+            break;
+
+        case 'D':
+            _pDebug->setPID(_pDebug->getP(), _pDebug->getI(), _pDebug->getD() + 0.1);
+            LOGI("PID: %4.1f, %4.1f, %4.1f\n", _pDebug->getP(), _pDebug->getI(), _pDebug->getD());
+            break;
+
+        case 'd':
+            _pDebug->setPID(_pDebug->getP(), _pDebug->getI(), _pDebug->getD() - 0.1);
+            LOGI("PID: %4.1f, %4.1f, %4.1f\n", _pDebug->getP(), _pDebug->getI(), _pDebug->getD());
+            break;
+
+        case 'T':
+            _pDebug->moveTo(_pDebug->getTPR());
+            LOGI("target : %ld\n", _pDebug->getTarget());
+            break;
+
+        case 't':
+            _pDebug->moveTo(-_pDebug->getTPR());
+            LOGI("target : %ld\n", _pDebug->getTarget());
+            break;
+    }
+}
+
+void SwerveWheel::loop() {
+    for (int i = 0; i < ARRAY_SIZE(_pDriver); i++) {
+        if (_pDriver[i])
+            _pDriver[i]->loop();
     }
 }

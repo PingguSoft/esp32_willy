@@ -95,43 +95,49 @@ void initPCNT(pcnt_unit_t unit, int gpio_pulse, int gpio_ctrl = PCNT_PIN_NOT_USE
 * WheelDriver
 *****************************************************************************************
 */
-WheelDriver::WheelDriver(int8_t pin_esc, int8_t pin_ctr, int8_t pin_ctr_dir, bool reverse,
-                         uint16_t radius, uint16_t tpr) {
-    _ext_pwm_addr = 0;
-    _drv_type = DRV_ESC;
-    _pin_pwm = pin_esc;
+void WheelDriver::init(motor_drv_t drv_type, int8_t pin_pwm, int8_t pin_in1, int8_t pin_in2, int8_t pin_ctr, int8_t pin_ctr_dir,
+                  bool reverse, uint16_t radius, uint16_t tpr, uint8_t addr) {
+    _drv_type = drv_type;
+    _pin_pwm = pin_pwm;
+    _pin_in1 = pin_in1;
+    _pin_in2 = pin_in2;
     _pin_ctr = pin_ctr;
     _pin_ctr_dir = pin_ctr_dir;
     _reverse = reverse;
     _radius  = radius;
     _tpr     = tpr;
+    _ext_pwm_addr = addr;
+    _tgtTick = 0;
+    _pid_hz = 50;
+    _p = 0.7;
+    _i = 0.3;
+    _d = 0.0;
+    _pid.configure(_p, _i, _d, _pid_hz, 16, true);
+    _pid.setOutputRange(-128, 128);
+    _pid_period = 1000 / _pid_hz;
+}
+
+void WheelDriver::setPID(float p, float i, float d) {
+    _p = p;
+    _i = i;
+    _d = d;
+    _pid.setCoefficients(_p, _i, _d, _pid_hz);
+}
+
+WheelDriver::WheelDriver(int8_t pin_esc, int8_t pin_ctr, int8_t pin_ctr_dir, bool reverse,
+                         uint16_t radius, uint16_t tpr) {
+    init(DRV_ESC, pin_esc, PIN_NONE, PIN_NONE, pin_ctr, pin_ctr_dir, reverse, radius, tpr, 0);
 }
 
 WheelDriver::WheelDriver(int8_t pin_in1, int8_t pin_in2, int8_t pin_ctr, int8_t pin_ctr_dir, bool reverse,
                          uint16_t radius, uint16_t tpr, uint8_t addr) {
-    _ext_pwm_addr = addr;
-    _drv_type = DRV_8833;
-    _pin_in1 = pin_in1;
-    _pin_in2 = pin_in2;
-    _pin_ctr = pin_ctr;
-    _pin_ctr_dir = pin_ctr_dir;
-    _reverse = reverse;
-    _radius  = radius;
-    _tpr     = tpr;
+
+    init(DRV_8833, PIN_NONE, pin_in1, pin_in2, pin_ctr, pin_ctr_dir, reverse, radius, tpr, addr);
 }
 
 WheelDriver::WheelDriver(int8_t pin_in1, int8_t pin_in2, int8_t pin_pwm, int8_t pin_ctr, uint8_t pin_ctr_dir, bool reverse,
                          uint16_t radius, uint16_t tpr) {
-    _ext_pwm_addr = 0;
-    _drv_type = DRV_TB6612FNG;
-    _pin_in1 = pin_in1;
-    _pin_in2 = pin_in2;
-    _pin_pwm = pin_pwm;
-    _pin_ctr = pin_ctr;
-    _pin_ctr_dir = pin_ctr_dir;
-    _reverse = reverse;
-    _radius  = radius;
-    _tpr     = tpr;
+    init(DRV_TB6612FNG, pin_pwm, pin_in1, pin_in2, pin_ctr, pin_ctr_dir, reverse, radius, tpr, 0);
 }
 
 void WheelDriver::setup() {
@@ -293,9 +299,25 @@ long WheelDriver::getTicks() {
 
 void WheelDriver::reset() {
     _ticks_mult = 0;
+    _tgtTick = 0;
     if (_pin_ctr != PIN_NONE) {
         pcnt_counter_pause((pcnt_unit_t)_unit);
         pcnt_counter_clear((pcnt_unit_t)_unit);
         pcnt_counter_resume((pcnt_unit_t)_unit);
+    }
+}
+
+void WheelDriver::loop() {
+    if (_pin_ctr == PIN_NONE)
+        return;
+
+    unsigned long ts = millis();
+    if (ts - _last_ms >= _pid_period) {
+        long cur = getTicks();
+        int  spd = _pid.step(_tgtTick, cur);
+
+        setSpeed(spd);
+        _last_ms = ts;
+        LOGI("pos : %8ld / %8ld => spd:%3d\n", cur, _tgtTick, spd);
     }
 }
