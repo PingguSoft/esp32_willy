@@ -37,6 +37,7 @@ SwerveWheel::SwerveWheel(WheelDriver *up, WheelDriver *down) :
     _pDriver { up, down }
 {
     reset(false);
+    _pDebug = _pDriver[0];
 }
 
 void SwerveWheel::setup() {
@@ -117,12 +118,12 @@ void SwerveWheel::debug(int key) {
             break;
 
         case ',':
-            _pDebug->setSpeed(_pDebug->getSpeed() + 5);
+            _pDebug->setSpeed(_pDebug->getSpeed() - 5);
             LOG("drv:%d, speed:%4d\n", _idx, _pDebug->getSpeed());
             break;
 
         case '.':
-            _pDebug->setSpeed(_pDebug->getSpeed() - 5);
+            _pDebug->setSpeed(_pDebug->getSpeed() + 5);
             LOG("drv:%d, speed:%4d\n", _idx, _pDebug->getSpeed());
             break;
 
@@ -197,6 +198,6 @@ void SwerveWheel::debug(int key) {
 void SwerveWheel::loop() {
     for (int i = 0; i < ARRAY_SIZE(_pDriver); i++) {
         if (_pDriver[i])
-            _pDriver[i]->loop();
+            _pDriver[i]->loop(_pDriver[i] == _pDebug);
     }
 }

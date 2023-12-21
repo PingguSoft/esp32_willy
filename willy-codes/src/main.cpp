@@ -14,16 +14,16 @@ bool        _is_go = false;
 
 SwerveWheel *_pSwerves[] = {
     // center
-    new SwerveWheel(new WheelDriver(PIN_W3_M1_PCA_IN1, PIN_W3_M1_PCA_IN2, PIN_W3_M1_C1, PIN_W3_M1_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 0x47),
-                    new WheelDriver(PIN_W3_M2_PCA_IN1, PIN_W3_M2_PCA_IN2, PIN_W3_M2_C1, PIN_W3_M2_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 0x47)),
+    new SwerveWheel(new WheelDriver(PIN_W3_M1_PCA_IN1, PIN_W3_M1_PCA_IN2, PIN_W3_M1_C1, PIN_W3_M1_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 20, 0x47),
+                    new WheelDriver(PIN_W3_M2_PCA_IN1, PIN_W3_M2_PCA_IN2, PIN_W3_M2_C1, PIN_W3_M2_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 20, 0x47)),
 
     // left
-    new SwerveWheel(new WheelDriver(PIN_W2_M1_PCA_IN1, PIN_W2_M1_PCA_IN2, PIN_W2_M1_C1, PIN_W2_M1_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 0x47),
-                    new WheelDriver(PIN_W2_M2_PCA_IN1, PIN_W2_M2_PCA_IN2, PIN_W2_M2_C1, PIN_W2_M2_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 0x47)),
+    new SwerveWheel(new WheelDriver(PIN_W2_M1_PCA_IN1, PIN_W2_M1_PCA_IN2, PIN_W2_M1_C1, PIN_W2_M1_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 20, 0x47),
+                    new WheelDriver(PIN_W2_M2_PCA_IN1, PIN_W2_M2_PCA_IN2, PIN_W2_M2_C1, PIN_W2_M2_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 20, 0x47)),
 
     // right
-    new SwerveWheel(new WheelDriver(PIN_W1_M1_PCA_IN1, PIN_W1_M1_PCA_IN2, PIN_W1_M1_C1, PIN_W1_M1_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 0x47),
-                    new WheelDriver(PIN_W1_M2_PCA_IN1, PIN_W1_M2_PCA_IN2, PIN_W1_M2_C1, PIN_W1_M2_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 0x47))
+    new SwerveWheel(new WheelDriver(PIN_W1_M1_PCA_IN1, PIN_W1_M1_PCA_IN2, PIN_W1_M1_C1, PIN_W1_M1_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 20, 0x47),
+                    new WheelDriver(PIN_W1_M2_PCA_IN1, PIN_W1_M2_PCA_IN2, PIN_W1_M2_C1, PIN_W1_M2_C2, false, WHEEL_RADIUS_MM, TICKS_PER_CYCLE, 20, 0x47))
 };
 
 SwerveWheel *_pDebugSwerve = _pSwerves[0];
@@ -83,6 +83,7 @@ void debug() {
                 LOGI("bus:%4.1fV, shunt:%4.1fmV, current:%5.0fmA, power:%5.0fmW\n", _ina.getBusVoltage(), _ina.getShuntVoltage_mV(), _ina.getCurrent_mA(), _ina.getPower_mW());
                 break;
         }
+        _pDebugSwerve->debug(key);
     }
 }
 

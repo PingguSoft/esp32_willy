@@ -27,6 +27,7 @@ private:
     float   _fDurationStableCheck;
 
 public:
+    PIDController();
     PIDController(String name, bool circular, float p, float i, float d);
     PIDController(String name, float p, float i, float d);
     PIDController(String name, float p, float i, float d, float iLimit);
@@ -38,7 +39,7 @@ public:
     float  getI()       { return _i; }
     float  getD()       { return _d; }
     float  getTarget()  { return _fTarget; }
-    void   setTarget(float target) { _fTarget = target; }
+    void   setTarget(float target) { reset(); _fTarget = target; }
 
     void  set(float p, float i, float d);
     float compute(unsigned long now, float input);

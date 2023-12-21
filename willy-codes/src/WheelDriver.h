@@ -3,6 +3,7 @@
 #include <ESP32Servo.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <FastPID.h>
+#include "PIDController.h"
 #include "config.h"
 
 
@@ -35,11 +36,11 @@ public:
     } motor_drv_t;
 
     WheelDriver(int8_t pin_esc, int8_t pin_ctr, int8_t pin_ctr_dir, bool reverse,                                   // DRV_ESC
-                uint16_t radius, uint16_t tpr);
+                uint16_t radius, uint16_t tpr, uint8_t deadzone);
     WheelDriver(int8_t pin_in1, int8_t pin_in2, int8_t pin_ctr, int8_t pin_ctr_dir, bool reverse,                   // DRV_8833
-                uint16_t radius, uint16_t tpr, uint8_t addr=0);
+                uint16_t radius, uint16_t tpr, uint8_t deadzone, uint8_t addr=0);
     WheelDriver(int8_t pin_in1, int8_t pin_in2, int8_t pin_pwm, int8_t pin_ctr, uint8_t pin_ctr_dir, bool reverse,  // DRV_TB6612FNG
-                uint16_t radius, uint16_t tpr);
+                uint16_t radius, uint16_t tpr, uint8_t deadzone);
 
     void     setup();
     void     reset();
@@ -55,7 +56,7 @@ public:
     long     getTarget()            { return _tgtTick;    }
     void     move(long ticks)       { _tgtTick  = ticks;  }
     void     moveTo(long ticks)     { _tgtTick += ticks;  }
-    void     loop();
+    void     loop(bool debug);
 
     float    getP()                 { return _p;          }
     float    getI()                 { return _i;          }
@@ -67,7 +68,7 @@ public:
 
 private:
     void     init(motor_drv_t drv_type, int8_t pin_pwm, int8_t pin_in1, int8_t pin_in2, int8_t pin_ctr, int8_t pin_ctr_dir,
-                  bool reverse, uint16_t radius, uint16_t tpr, uint8_t addr);
+                  bool reverse, uint16_t radius, uint16_t tpr, uint8_t deadzone, uint8_t addr);
 
     // for tracking odometry
     uint8_t  _unit;
@@ -83,6 +84,7 @@ private:
     int8_t   _pin_ctr;
     int8_t   _pin_ctr_dir;
     int      _speed;
+    uint8_t  _deadzone;
 
     double   _pwm_freq;
     uint8_t  _pwm_res;

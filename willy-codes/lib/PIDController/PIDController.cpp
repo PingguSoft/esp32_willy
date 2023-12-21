@@ -1,4 +1,5 @@
 #include "PIDController.h"
+#include "../../src/utils.h"
 
 
 /*
@@ -6,12 +7,15 @@
 * CONSTANTS
 *****************************************************************************************
 */
+PIDController::PIDController() : PIDController("PID", false, 1.0, 0.0, 0.0) {
+}
+
 PIDController::PIDController(String name, bool circular, float p, float i, float d) {
     _strName = name;
-    set(p, i, d);
     _fTarget = 0;
     _fIntegralLimit = 0;
     _isCircular = circular;
+    set(p, i, d);
 }
 
 PIDController::PIDController(String name, float p, float i, float d) : PIDController(name, false, p, i, d) {
@@ -27,7 +31,7 @@ PIDController::PIDController(String name, bool circular, float p, float i, float
 
 void PIDController::reset() {
     _fIntegral            = 0;
-    _lLastTS              = 0;
+    _lLastTS              = millis();
     _fLastInput           = 0;
     _fIntegStableCheck    = 0;
     _fDurationStableCheck = 0;
@@ -79,7 +83,7 @@ float PIDController::computeWithDelta(float input, float delta) {
     outI    = _i * _fIntegral;
     outD    = _d * (dError / delta);
     output  = outP + outI + outD;
-    //LOG("t:%5.2f, i:%5.2f, e:%5.2f, d:%5.2f, P:%5.2f, i:%5.2f, oD:%5.2f, out:%5.2f\n", _fTarget, input, error, delta, outP, _fIntegral, outD, output);
+    LOG("t:%5.2f, i:%5.2f, e:%5.2f, d:%5.2f, P:%5.2f, i:%5.2f, oD:%5.2f, out:%5.2f\n", _fTarget, input, error, delta, outP, _fIntegral, outD, output);
 
     _fLastInput = input;
     _fLastError = error;
@@ -91,7 +95,7 @@ float PIDController::computeWithDelta(float input, float delta) {
 }
 
 float PIDController::compute(unsigned long now, float input) {
-    float  delta = max(float((now - _lLastTS) / 1000.0f), 0.001f);
+    float  delta = max(float(now - _lLastTS) / 1000.0f, 0.001f);
 
     _lLastTS = now;
     return computeWithDelta(input, delta);
